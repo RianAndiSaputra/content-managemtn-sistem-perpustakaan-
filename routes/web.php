@@ -57,3 +57,7 @@ Route::get('search/peminjaman', [PeminjamanController::class, 'search'])->name('
 // Route untuk laporan
 Route::get('laporan/peminjaman', [PeminjamanController::class, 'report'])->name('peminjaman.report');
 Route::get('laporan/denda', [DendaController::class, 'report'])->name('denda.report');
+
+//Route untuk denda export laporan
+// Add this with your other denda routes
+Route::get('/denda/export', [DendaController::class, 'export'])->name('denda.export');

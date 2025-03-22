@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Denda;
 use App\Models\Peminjaman;
+use App\Exports\DendaExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Facades\Excel;
 
 class DendaController extends Controller
 {
@@ -168,4 +170,35 @@ class DendaController extends Controller
             'total_denda' => $totalDenda
         ]);
     }
+    public function export(Request $request)
+{
+    // You'll need to install and use a package like maatwebsite/excel
+    // This is a basic implementation example
+    
+    $query = Denda::query()->with('peminjaman.member');
+    
+    // Apply the same filters as in your report method
+    if ($request->filled('status_pembayaran')) {
+        $query->where('status_pembayaran', $request->status_pembayaran);
+    }
+    
+    if ($request->filled('tanggal_mulai')) {
+        $query->whereDate('tanggal_denda', '>=', $request->tanggal_mulai);
+    }
+    
+    if ($request->filled('tanggal_akhir')) {
+        $query->whereDate('tanggal_denda', '<=', $request->tanggal_akhir);
+    }
+    
+    if ($request->filled('member')) {
+        $query->whereHas('peminjaman.member', function($q) use ($request) {
+            $q->where('nama', 'like', '%' . $request->member . '%');
+        });
+    }
+    
+    $dendas = $query->get();
+    
+    // For Excel export, you'd typically use a library like Laravel Excel
+    return Excel::download(new DendaExport($dendas), 'laporan-denda.xlsx');
+}
 }
